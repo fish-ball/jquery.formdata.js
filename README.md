@@ -48,7 +48,7 @@ Of course, you can directly download the file from the git repository.
 You can also include the script file directly with the html markup, or use AMD
 module to introduce the code:
 
-#### 1. Directly with <script> tag:
+#### 1. Directly with `<script>` tag:
 
 ```html
 <!DOCTYPE html>
