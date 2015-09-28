@@ -1,6 +1,6 @@
 {
   "name": "jquery-formdata",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "jQuery Ajax with file/blob/base64Url fields supported.",
   "main": "jquery.formdata.js",
   "scripts": {
@@ -12,6 +12,7 @@
   },
   "keywords": [
     "jquery-plugin",
+    "ecosystem:jquery",
     "ajax",
     "formdata",
     "multipart"

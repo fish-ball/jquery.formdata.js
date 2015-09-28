@@ -1,7 +1,7 @@
 {
   "name": "jquery-formdata",
   "main": "jquery.formdata.js",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "https://github.com/fish-ball/jquery.formdata.js",
   "repository": {
     "type": "git",
@@ -14,6 +14,7 @@
   "moduleType": [],
   "keywords": [
     "jquery-plugin",
+    "ecosystem:jquery",
     "ajax",
     "formdata",
     "multipart"
