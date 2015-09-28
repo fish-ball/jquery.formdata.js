@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>test01.html</title>
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="../jquery.formdata.js"></script>
+</head>
+<body>
+    <input id="upload" type="file" name="avatar" />
+    <a id="submit" href="javascript:;">Submit</a>
+    <script>
+    $(function() {
+        $('#submit').click(function() {
+            $.ajaxFormData({
+                url: 'test01.api.php',
+                method: 'post',
+                data: {
+                    name: 'test01',
+                    avatar: document.getElementById('upload').files[0]
+                },
+                success: function(data, textStatus, jqXHR) {
+                    alert(data);
+                }, 
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert(jqXHR.responseText);
+                }
+            });
+        });
+    });
+    </script>
+</body>
+</html>
+

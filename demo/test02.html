@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>test02.html</title>
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="../jquery.formdata.js"></script>
+</head>
+<body>
+    <canvas id="canvas" width="600" height="480"></canvas>
+    <a id="submit" href="javascript:;">Submit</a>
+    <script>
+    $(function() {
+        // example from http://www.atopon.org/mandel/
+        var canvas = document.getElementById('canvas');
+        var context = canvas.getContext('2d');
+        var width = canvas.width ,height = canvas.height;
+        var maxIterations = 100;
+        var minRe = -2.0;
+        var maxRe = 1.0;
+        var minIm = -1;
+        var maxIm = minIm+(maxRe-minRe)*height/width;
+
+        context.fillRect(0, 0, width, height);
+        var imgd = context.getImageData(0, 0, width, height)
+        var pix = imgd.data;
+
+        var drawPixel = function (x, y, itr) {
+            var i = (y * width + x) * 4;
+            pix[i] = pix[i + 1] = pix[i + 2] = Math.round(itr * 255 / maxIterations);
+        };
+
+        mandelbrot(width, height, drawPixel);
+        context.putImageData(imgd, 0, 0);
+
+        function mandelbrot(imageWidth, imageHeight, drawPixel) {
+            var re_factor = (maxRe-minRe)/(imageWidth-1);
+            var im_factor = (maxIm-minIm)/(imageHeight-1);
+            for(var y=0; y<imageHeight; ++y) {
+                var c_im = maxIm - y*im_factor;
+                for(var x=0; x<imageWidth; ++x) {
+                    var c_re = minRe + x*re_factor;
+                    var z_re = c_re, z_im = c_im;
+                    var isInside = true;
+                    var n = 0;
+                    for(; n<maxIterations; ++n) {
+                        var z_re2 = z_re*z_re, z_im2 = z_im*z_im;
+                        if(z_re2 + z_im2 > 4) {
+                            isInside = false;
+                            break;
+                        }
+                        z_im = 2*z_re*z_im + c_im;
+                        z_re = z_re2 - z_im2 + c_re;
+                    }
+                    if (!isInside) { drawPixel(x, y, n); }
+                }
+            }
+        }
+
+        $('#submit').click(function() {
+            $.ajaxFormData({
+                url: 'test02.api.php',
+                method: 'post',
+                data: {
+                    name: 'test02',
+                    picture: canvas.toDataURL()
+                },
+                success: function(data, textStatus, jqXHR) {
+                    alert(data);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert(jqXHR.responseText);
+                }
+            });
+        });
+    });
+    </script>
+</body>
+</html>
+
