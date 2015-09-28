@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>test03.html</title>
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="../jquery.formdata.js"></script>
+</head>
+<body>
+    <script>
+    $(function() {
+        $.ajaxFormData({
+            url: 'test03.api.php',
+            method: 'post',
+            data: {
+                'name': 'test02',
+                'employee[]': ['Bob', 'Andy', 'Mary'],
+                'empty[]': [],
+                'yes': true,
+                'no': false,
+                'number': 1803e-2  // equals 18.03
+            },
+            success: function(data, textStatus, jqXHR) {
+                alert(data);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert(jqXHR.responseText);
+            }
+        });
+    });
+    </script>
+</body>
+</html>
+

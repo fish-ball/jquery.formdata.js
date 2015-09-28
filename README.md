@@ -43,6 +43,8 @@ that's all.
 
 Of course, you can directly download the file from the git repository.
 
+---
+
 ### Include the code
 
 You can also include the script file directly with the html markup, or use AMD
@@ -105,6 +107,8 @@ require(['jquery', 'jquery.formdata'], function($) {
 });
 ```
 
+---
+
 ### The `$.ajaxFormData` method
 
 The `$.ajaxFormData` takes url (optional) and options with the same interface
@@ -112,6 +116,8 @@ with the standard `$.ajax` method, but it accepts only for unsafe HTTP methods.
 
 That means, if using `method: 'get'`, the `$.ajaxForm` may bypass the ajax
 request to a standard `$.ajax` method, and do NOT deal with the advance fields.
+
+If no method is set as an option, **we use `POST` method as default**.
 
 More, in any case of `$.ajaxFormData` expected, it only accepts data in the 
 form of standard javascript object, do not accept raw string, array buffer or
@@ -127,9 +133,16 @@ More, the `$.ajaxFormData` also returns a jQuery Promise object, which can
 register `.done/.fail/.success` or other deferred usage. And the callback args
 is just the same as the `$.ajax` ones.
 
+---
+
 ### Examples
 
 #### 1. Single file field
+
+You can get the File object of a file input, and directly pass that object as
+a field to post.
+
+Passing a blob object is similar to this, I won't make another example for it.
 
 ```html
 <!DOCTYPE html>
@@ -178,7 +191,7 @@ var_dump($_FILES);
 
 Then the frontend alerts the result:
 
-```
+```text
 array(1) {
   ["avatar"]=>
   array(5) {
@@ -289,7 +302,7 @@ The backend receives the field as a file, and move it to the current folder.
 
 After the action, you can found the saved image file: `picture.png`.
 
-```
+```php
 <?php
 // test02.api.php
 assert($_POST['name'] == 'test02');
@@ -297,3 +310,193 @@ var_dump($_FILES);
 
 rename($_FILES['picture']['tmp_name'], 'picture.png');
 ```
+
+#### 3. Passing array, number, and boolean values
+
+This example show how to post these special field types:
+
+As same as a checkbox input, empty array or uncheck value(false) is omitted.
+
+And if you pass an array, the field name must have the '[]' suffix.
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>test03.html</title>
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="../jquery.formdata.js"></script>
+</head>
+<body>
+    <script>
+    $(function() {
+        $.ajaxFormData({
+            url: 'test03.api.php',
+            method: 'post',
+            data: {
+                'name': 'test02',
+                'employee[]': ['Bob', 'Andy', 'Mary'],
+                'empty[]': [],
+                'yes': true,
+                'no': false,
+                'number': 1803e-2  // equals 18.03
+            },
+            success: function(data, textStatus, jqXHR) {
+                alert(data);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert(jqXHR.responseText);
+            }
+        });
+    });
+    </script>
+</body>
+</html>
+```
+
+The background simply prints all the post fields:
+
+```php
+<?php
+// test03.api.php
+assert($_POST['name'] == 'test03');
+var_dump($_POST);
+```
+
+And the result is alerted as below:
+
+```text
+array(4) {
+  ["name"]=>
+  string(6) "test02"
+  ["employee"]=>
+  array(3) {
+    [0]=>
+    string(3) "Bob"
+    [1]=>
+    string(4) "Andy"
+    [2]=>
+    string(4) "Mary"
+  }
+  ["yes"]=>
+  string(2) "on"
+  ["number"]=>
+  string(5) "18.03"
+}
+```
+
+#### 4. Passing multiple file field, directly passing a FileList
+
+The below example didn't give the method option, use POST by default.
+
+We pass a set of files at once on a single field, notice about the response.
+
+We set the callbacks on the promise object, the return value of 
+`$.ajaxFormData`, and the signatures are completely the same with the standard
+`$.ajax` ones.
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>test04.html</title>
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="../jquery.formdata.js"></script>
+</head>
+<body>
+<input id="gallery" type="file" multiple />
+<a id="submit" href="javascript:;">Submit</a>
+<script>
+    $(function() {
+        $('#submit').click(function() {
+            $.ajaxFormData('test04.api.php', {
+                data: {
+                    'name': 'test04',
+                    'gallery[]': document.getElementById('gallery').files
+                }
+            }).done(function(data, textStatus, jqXHR) {
+                alert(data);
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                alert(jqXHR.responseText);
+            });
+        });
+    });
+</script>
+</body>
+</html>
+```
+
+The backend only shows the `$_FILES` object:
+
+```php
+<?php
+// test04.api.php
+assert($_POST['name'] == 'test04');
+var_dump($_FILES);
+```
+
+The result when 2 files were selected:
+
+```text
+array(1) {
+  ["gallery"]=>
+  array(5) {
+    ["name"]=>
+    array(2) {
+      [0]=>
+      string(12) "image_01.png"
+      [1]=>
+      string(12) "image_02.jpg"
+    }
+    ["type"]=>
+    array(2) {
+      [0]=>
+      string(9) "image/png"
+      [1]=>
+      string(10) "image/jpeg"
+    }
+    ["tmp_name"]=>
+    array(2) {
+      [0]=>
+      string(14) "/tmp/php8vqEnp"
+      [1]=>
+      string(14) "/tmp/php5fJ7mw"
+    }
+    ["error"]=>
+    array(2) {
+      [0]=>
+      int(0)
+      [1]=>
+      int(0)
+    }
+    ["size"]=>
+    array(2) {
+      [0]=>
+      int(431951)
+      [1]=>
+      int(53077)
+    }
+  }
+}
+```
+
+The result when no file is selected:
+
+```text
+array(0) {
+}
+```
+
+About
+-----
+
+If you have any question about this plugin, you can directly contact me:
+
+My blog: <https://www.huangwenchao.com.cn>
+
+My email: <alfred.h@163.com>
+
+Welcome to fork and contribute, hope anyone who make some improve on it.
+
+
+

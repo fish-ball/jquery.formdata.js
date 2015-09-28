@@ -77,6 +77,7 @@
         }
         options = options || {};
         options.url = options.url || url || '';
+        options.method = options.method || 'post';  // post method default
 
         // Create the final options object
         var s = jQuery.ajaxSetup({}, options);
@@ -135,7 +136,7 @@
                     bin_val+'\r\n';
             }
             // Supports normal string support
-            else if(/^(string|number)$/.test(typeof(val))) {
+            else if(typeof(val) == 'string' || typeof(val) == 'number') {
                 // encode unicode characters to utf8 bytes
                 postdata += '--' + boundary+'\r\n' +
                     'Content-Disposition: form-data; ' +
@@ -144,10 +145,13 @@
             }
             // Like a single checkbox, true posts an 'on' value, omit false.
             else if(typeof(val) === 'boolean') {
-                postdata += '--' + boundary+'\r\n' +
-                    'Content-Disposition: form-data; ' +
-                    'name="' + name + '"\r\n\r\n' +
-                    'on' + '\r\n';
+                // Only true value is export as 'on', false is omitted.
+                if(val) {
+                    postdata += '--' + boundary+'\r\n' +
+                        'Content-Disposition: form-data; ' +
+                        'name="' + name + '"\r\n\r\n' +
+                        'on' + '\r\n';
+                }
             }
             // Not supporting case.
             else {
@@ -168,10 +172,10 @@
 
                 // Deal with multiple fields
                 // Like a multiple checkbox, an array yield multiple parts.
-                if(val instanceof Array) {
+                if(val instanceof Array || val instanceof FileList) {
                     if(/\[]$/.test(name)) {
                         $.each(val, function() {
-                            appendField(name, val);
+                            appendField(name, this);
                         });
                     } else {
                         alert(

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>test04.html</title>
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="../jquery.formdata.js"></script>
+</head>
+<body>
+<input id="gallery" type="file" multiple />
+<a id="submit" href="javascript:;">Submit</a>
+<script>
+    $(function() {
+        $('#submit').click(function() {
+            $.ajaxFormData('test04.api.php', {
+                data: {
+                    'name': 'test04',
+                    'gallery[]': document.getElementById('gallery').files
+                }
+            }).done(function(data, textStatus, jqXHR) {
+                alert(data);
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                alert(jqXHR.responseText);
+            });
+        });
+    });
+</script>
+</body>
+</html>
+
