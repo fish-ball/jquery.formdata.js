@@ -1,0 +1,32 @@
+{
+  "name": "jquery-formdata",
+  "main": "jquery.formdata.js",
+  "version": "0.1.0",
+  "homepage": "https://github.com/fish-ball/jquery.formdata.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/fish-ball/jquery.formdata.js.git"
+  },
+  "authors": [
+    "fish-ball <alfred.h@163.com>"
+  ],
+  "description": "jQuery Ajax with file/blob/base64Url fields supported.",
+  "moduleType": [],
+  "keywords": [
+    "jquery-plugin",
+    "ajax",
+    "formdata",
+    "multipart"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "jquery": ">=1.5"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
