@@ -1,7 +1,7 @@
 {
   "name": "jquery-formdata",
   "main": "jquery.formdata.js",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "homepage": "https://github.com/fish-ball/jquery.formdata.js",
   "repository": {
     "type": "git",

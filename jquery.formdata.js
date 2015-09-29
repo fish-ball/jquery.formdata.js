@@ -11,7 +11,9 @@
 
 // AMD support
 (function (factory) {
+
     "use strict";
+
     if (typeof define === 'function' && define.amd) {
         // using AMD; register as anon module
         define(['jquery'], factory);
@@ -19,6 +21,7 @@
         // no AMD; invoke directly
         factory( (typeof(jQuery) != 'undefined') ? jQuery : window.Zepto );
     }
+
 } (function($) {
 
     "use strict";
@@ -45,7 +48,7 @@
      * @param str:
      * @returns string:
      */
-    var str2utf8 = window.TextEncoder ? function(str) {
+    var utf8encode = window.TextEncoder ? function(str) {
         var encoder = new TextEncoder('utf8');
         var bytes = encoder.encode(str);
         var result = '';
@@ -104,13 +107,11 @@
 
             // Supports File or Blob objects
             if(val instanceof File || val instanceof Blob) {
-                // Make another closure to freeze the field variable.
-                (function(name, val) {
-                    var dfd = $.Deferred();
+                promises.push($.Deferred(function(dfd) {
                     var reader = new FileReader();
                     reader.onload = function(e) {
                         var bin_val = e.target.result;
-                        var filename = val.name || 'blob';
+                        var filename = val.name && utf8encode(val.name) || 'blob';
                         var content_type = val.type || 'application/octet-stream';
                         postdata += '--' + boundary+'\r\n' +
                             'Content-Disposition: form-data; '+
@@ -120,8 +121,7 @@
                         dfd.resolve();
                     };
                     reader.readAsBinaryString(val);
-                    promises.push(dfd.promise());
-                })(name, val);
+                }).promise());
             }
             // Supports normal base64 image types
             else if(/^data:image\/\w+;base64,/.test(val)) {
@@ -141,7 +141,7 @@
                 postdata += '--' + boundary+'\r\n' +
                     'Content-Disposition: form-data; ' +
                     'name="' + name + '"\r\n\r\n' +
-                    str2utf8(val.toString()) + '\r\n';
+                    utf8encode(val.toString()) + '\r\n';
             }
             // Like a single checkbox, true posts an 'on' value, omit false.
             else if(typeof(val) === 'boolean') {
@@ -164,39 +164,31 @@
         };
 
         // Deal with all the fields in the data dict.
-        for(var name in data) {
+        $.each(data, function(name, val) {
 
-            if(data.hasOwnProperty(name)) {
-
-                var val = data[name];
-
-                // Deal with multiple fields
-                // Like a multiple checkbox, an array yield multiple parts.
-                if(val instanceof Array || val instanceof FileList) {
-                    if(/\[]$/.test(name)) {
-                        $.each(val, function() {
-                            appendField(name, this);
-                        });
-                    } else {
-                        alert(
-                            'jQuery.formdata: an array field must have a `[]` suffix.\n' +
-                            'ignore the field ['+name+'].'
-                        );
-                    }
+            // Deal with multiple fields
+            // Like a multiple checkbox, an array yield multiple parts.
+            if(val instanceof Array || val instanceof FileList) {
+                if(/\[]$/.test(name)) {
+                    $.each(val, function() {
+                        appendField(name, this);
+                    });
+                } else {
+                    alert(
+                        'jQuery.formdata: an array field must have a `[]` suffix.\n' +
+                        'ignore the field ['+name+'].'
+                    );
                 }
-                // Deal with single field
-                else {
-                    appendField(name, val);
-                }
-
             }
-        }
+            // Deal with single field
+            else {
+                appendField(name, val);
+            }
 
-        // The ajax returning deferred object.
-        var deferred = $.Deferred();
+        });
 
         // When all async reader field was loaded, start the ajax.
-        $.when.apply($, promises).done(function() {
+        return $.when.apply($, promises).then(function() {
 
             postdata += '--' + boundary + '--\r\n';
             postdata = str2Uint8Array(postdata).buffer;
@@ -206,21 +198,9 @@
             s.processData = false;
             s.contentType = 'multipart/form-data; boundary=' + boundary;
 
-            var callbackContext = s.context || s;
-
-            $.ajax(s).done(function(data, textStatus, jqXHR) {
-                deferred.resolveWith(callbackContext, [data, textStatus, jqXHR]);
-            }).fail(function(jqXHR, textStatus, errorThrown) {
-                deferred.rejectWith(callbackContext, [jqXHR, textStatus, errorThrown]);
-            });
-
-        }).fail(function() {
-
-            alert('Field pre-processing error.');
+            return $.ajax(s);
 
         });
-
-        return deferred.promise();
 
     };
 
